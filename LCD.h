@@ -14,8 +14,17 @@ class TrLCD {
       return _enabled;
     };
 
+	void setScanning();
+
+protected:
+	void nextPage();
+	void toggleArm();
+	void toggleLog();
+	
   private:
     bool _enabled = false;
+    bool _buttons_enabled = false;
+    int _current_page = 0;
 
 };
 

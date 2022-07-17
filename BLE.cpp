@@ -20,12 +20,14 @@ static BLERemoteCharacteristic* pWifiModeCharacteristic;
 static BLERemoteCharacteristic* pArmCharacteristic;
 static BLERemoteCharacteristic* pLogCharacteristic;
 double val_battery = 0;
-String val_ip_address = "0.0.0.0";
+String val_ip_address = "999.999.999.999";
 String val_wifi_mode = "XX";
 bool val_arm = true;
 bool val_log = false;
 
 // Capability
+static BLERemoteCharacteristic* pHasGpsCharacteristic;
+static BLERemoteCharacteristic* pIsGpsLockedCharacteristic;
 static BLERemoteCharacteristic* pHasBmsCharacteristic;
 bool val_has_bms = false;
 bool val_has_gps = false;
@@ -66,7 +68,7 @@ double val_mag_y = 0;
 double val_mag_z = 0;
 
 void resetValues() {
-  val_ip_address = "0.0.0.0";
+  val_ip_address = "999.999.999.999";
   val_wifi_mode = "XX";
   val_arm = false;
   val_log = false;
@@ -122,7 +124,7 @@ String TrBLE::getIpAddress() {
   return val_ip_address;
 }
 String TrBLE::getWifiMode() {
-  return val_ip_address;
+  return val_wifi_mode;
 }
 bool TrBLE::isArmed() {
   return val_arm;
@@ -132,9 +134,23 @@ bool TrBLE::isLogging() {
 }
 void TrBLE::setArmed(bool tf) {
   // TBD
+  Serial.print("TrBLE::setArmed(");
+  Serial.print(tf ? "TRUE" : "FALSE");
+  Serial.print(")");
+  Serial.println();
+
+  pArmCharacteristic->writeValue(tf ? 1 : 0);
+//  pArmCharacteristic->notify();
 }
 void TrBLE::setLogging(bool tf) {
   // TBD
+  Serial.print("TrBLE::setLogging(");
+  Serial.print(tf ? "TRUE" : "FALSE");
+  Serial.print(")");
+  Serial.println();
+
+  pLogCharacteristic->writeValue(tf ? 1 : 0);
+//  pLogCharacteristic->notify();
 }
 
 
@@ -249,12 +265,128 @@ double TrBLE::getMagZ() {
   return val_mag_z;
 }
 
-// Core
-static void notifyCallbackValue(  BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
+// Boolean
+static void notifyCallbackBoolean(BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
+  bool val = (*pData) ? true : false;
+#if _DEBUG_
+  String out;
+#endif // _DEBUG_
+
+  String in = String(pBLERemoteCharacteristic->getUUID().toString().c_str());
+  if (false) {
+
+  } else if (in == String(ARMED_CHARACTERISTIC_UUID)) {
+    val_arm = val;
+#if _DEBUG_
+    out = "       Armed: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else  if (in == String(LOGGING_CHARACTERISTIC_UUID)) {
+    val_log = val;
+#if _DEBUG_
+    out = "     Logging: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(RTCENABLED_CHARACTERISTIC_UUID)) {
+    val_has_rtc = val;
+#if _DEBUG_
+    out = " RTC Enabled: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(BMSENABLED_CHARACTERISTIC_UUID)) {
+    val_has_bms = val;
+#if _DEBUG_
+    out = " BMS Enabled: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(GPSENABLED_CHARACTERISTIC_UUID)) {
+    val_has_gps = val;
+#if _DEBUG_
+    out = " GPS Enabled: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(GPSLOCKED_CHARACTERISTIC_UUID)) {
+    val_is_gps_locked = val;
+#if _DEBUG_
+    out = "  GPS Locked: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(EMUENABLED_CHARACTERISTIC_UUID)) {
+    val_has_emu = val;
+#if _DEBUG_
+    out = " EMU Enabled: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(IMUENABLED_CHARACTERISTIC_UUID)) {
+    val_has_imu = val;
+#if _DEBUG_
+    out = " IMU Enabled: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(SRVENABLED_CHARACTERISTIC_UUID)) {
+    val_has_srv = val;
+#if _DEBUG_
+    out = " SRV Enabled: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(CTEMPERATURE_CHARACTERISTIC_UUID)) {
+    val_has_temp = val;
+#if _DEBUG_
+    out = "    Has Temp: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(CPRESSURE_CHARACTERISTIC_UUID)) {
+    val_has_pressure = val;
+#if _DEBUG_
+    out = "Has Pressure: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(CACC_CHARACTERISTIC_UUID)) {
+    val_has_acc = val;
+#if _DEBUG_
+    out = "     Has ACC: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(CGYRO_CHARACTERISTIC_UUID)) {
+    val_has_gyro = val;
+#if _DEBUG_
+    out = "    Has GYRO: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else if (in == String(CMAG_CHARACTERISTIC_UUID)) {
+    val_has_mag = val;
+#if _DEBUG_
+    out = "     Has MAG: "; out += (val ? "TRUE" : "FALSE");
+#endif // _DEBUG_
+
+  } else {
+#if _DEBUG_
+    out = "Unknown value";
+#endif // _DEBUG_
+  }
+
+#if _DEBUG_
+  Serial.print(in);
+  Serial.print(" (");
+  if (length < 10) Serial.print(" ");
+  Serial.print(length);
+  Serial.print(" byte");
+  if (length == 1) Serial.print(" ");
+  else             Serial.print("s");
+  Serial.print("): ");
+  Serial.print(out);
+  Serial.println();
+#endif // _DEBUG_
+}
+
+// Value
+static void notifyCallbackValue(BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
   int8_t rval8;
   int32_t rval32;
   int val;
-  String unit = "";
+#if _DEBUG_
+  String out;
+#endif // _DEBUG_
 
   if (length == 1) {
     memcpy(&rval8, pData, sizeof(rval8));
@@ -265,81 +397,94 @@ static void notifyCallbackValue(  BLERemoteCharacteristic* pBLERemoteCharacteris
   }
 
   String in = String(pBLERemoteCharacteristic->getUUID().toString().c_str());
-  if (in == String(BATTERY_CHARACTERISTIC_UUID.toString().c_str())) {
+  if (false) {
+  } else if (in == String(BATTERY_CHARACTERISTIC_UUID.toString().c_str())) {
     val_battery = float(val);
-    unit = "%";
+#if _DEBUG_
+    out = "     Battery: "; out += val_battery; out += "%";
+#endif // _DEBUG_
 
   } else if (in == String(ACCZ_CHARACTERISTIC_UUID)) {
     val_acc_z = float(val) / 1000.0;
-    unit = "%";
+#if _DEBUG_
+    out = "       Acc-Z: "; out += val_acc_z; out += " m/s2";
+#endif // _DEBUG_
+
   } else {
-    Serial.println("    Unknown characteristic");
+#if _DEBUG_
+    out = "Unknown indicator";
+#endif // _DEBUG_
   }
 
 
 #if _DEBUG_
-  Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
+  Serial.print(in);
   Serial.print(" (");
+  if (length < 10) Serial.print(" ");
   Serial.print(length);
-  Serial.print(" bytes): ");
-  Serial.print(val);
-  Serial.print(" ");
-  Serial.print(unit);
+  Serial.print(" byte");
+  if (length == 1) Serial.print(" ");
+  else             Serial.print("s");
+  Serial.print("): ");
+  Serial.print(out);
   Serial.println();
 #endif // _DEBUG_
 }
 
-// Capability
-static void notifyCallbackCapability(  BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
-  bool val = (*pData) ? true : false;
-
+// String
+static void notifyCallbackString(BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
+  char rval[length + 1];
+  memcpy(&rval, pData, length);
+  rval[length] = 0x00;
 #if _DEBUG_
-  Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
-  Serial.print(" (");
-  Serial.print(length);
-  Serial.print(" bytes): ");
-  Serial.print(val ? "TRUE" : "FALSE");
-  Serial.println();
+  String out;
 #endif // _DEBUG_
 
-  String in = String(pBLERemoteCharacteristic->getUUID().toString().c_str());
-  if (in == String(BMSENABLED_CHARACTERISTIC_UUID)) {
-    val_has_bms = val;
+  String in = pBLERemoteCharacteristic->getUUID().toString().c_str();
+  if (false) {
+  } else if (in == String(IPADDR_CHARACTERISTIC_UUID)) {
+    val_ip_address = rval;
+#if _DEBUG_
+    out = "  IP Address: "; out += rval;
+#endif // _DEBUG_
+  } else if (in == String(WIFI_CHARACTERISTIC_UUID)) {
+    val_wifi_mode = rval;
+#if _DEBUG_
+    out = "   WiFi mode: "; out += rval;
+#endif // _DEBUG_
   } else {
-    Serial.println("    Unknown characteristic");
+#if _DEBUG_
+    out = "Unknown string: '"; out += rval; out += "'";
+#endif // _DEBUG_
   }
 
+#if _DEBUG_
+  Serial.print(in);
+  Serial.print(" (");
+  if (length < 10) Serial.print(" ");
+  Serial.print(length);
+  Serial.print(" byte");
+  if (length == 1) Serial.print(" ");
+  else             Serial.print("s");
+  Serial.print("): ");
+  Serial.print(out);
+  Serial.println();
+#endif // _DEBUG_
 }
-
-//static void notifyCallbackAccZ(  BLERemoteCharacteristic* pBLERemoteCharacteristic,
-//                                 uint8_t* pData,
-//                                 size_t length,
-//                                 bool isNotify) {
-//  int32_t rval;
-//  memcpy(&rval, pData, sizeof(rval));
-//
-//  val_acc_z = float(rval) / float(pow(10, 3));
-//
-//#if _DEBUG_
-//  Serial.print(pBLERemoteCharacteristic->getUUID().toString().c_str());
-//  Serial.print(" (");
-//  Serial.print(length);
-//  Serial.print(" bytes): ");
-//  Serial.print(val_acc_z);
-//  Serial.print(" m/s2");
-//  Serial.println();
-//#endif // _DEBUG_
-//}
 
 class MyClientCallback : public BLEClientCallbacks {
     void onConnect(BLEClient* pclient) {
+#if _DEBUG_ && _XDEBUG_
       Serial.println("BLEClient::onConnect()");
+#endif // _DEBUG_ && _XDEBUG_
     }
 
     void onDisconnect(BLEClient* pclient) {
       connected = false;
       resetValues();
+#if _DEBUG_ && _XDEBUG_
       Serial.println("BLEClient::onDisconnect()");
+#endif // _DEBUG_ && _XDEBUG_
     }
 };
 
@@ -375,9 +520,53 @@ bool connectToServer() {
     } else {
       if (pBatteryCharacteristic->canNotify())
         pBatteryCharacteristic->registerForNotify(notifyCallbackValue);
+    }
 
+    // IP ADDRESS
+    pIpAddressCharacteristic = pRemoteService->getCharacteristic(BLEUUID(IPADDR_CHARACTERISTIC_UUID));
+    if (pIpAddressCharacteristic == nullptr) {
+      Serial.print("Failed to find IPADDR characteristic");
+      Serial.println();
+    } else {
+      if (pIpAddressCharacteristic->canNotify())
+        pIpAddressCharacteristic->registerForNotify(notifyCallbackString);
+    }
+
+    // WIFI MODE
+    pWifiModeCharacteristic = pRemoteService->getCharacteristic(BLEUUID(WIFI_CHARACTERISTIC_UUID));
+    if (pWifiModeCharacteristic == nullptr) {
+      Serial.print("Failed to find IPADDR characteristic");
+      Serial.println();
+    } else {
+      if (pWifiModeCharacteristic->canNotify())
+        pWifiModeCharacteristic->registerForNotify(notifyCallbackString);
+    }
+
+    // ARM STATUS
+    pArmCharacteristic = pRemoteService->getCharacteristic(BLEUUID(ARMED_CHARACTERISTIC_UUID));
+    if (pArmCharacteristic == nullptr) {
+      Serial.print("Failed to find ARMED characteristic");
+      Serial.println();
+    } else {
+      if (pArmCharacteristic->canNotify())
+        pArmCharacteristic->registerForNotify(notifyCallbackBoolean);
+    }
+    // LOG STATUS
+    pLogCharacteristic = pRemoteService->getCharacteristic(BLEUUID(LOGGING_CHARACTERISTIC_UUID));
+    if (pLogCharacteristic == nullptr) {
+      Serial.print("Failed to find LOGGING characteristic");
+      Serial.println();
+    } else {
+      if (pLogCharacteristic->canNotify())
+        pLogCharacteristic->registerForNotify(notifyCallbackBoolean);
     }
   }
+
+
+
+
+
+
 
   // Capabilities
   pRemoteService = pClient->getService(BLEUUID(WRFCOM_CAPABILITY_SERVICE_UUID));
@@ -387,16 +576,41 @@ bool connectToServer() {
 
     pHasBmsCharacteristic = nullptr;
   } else {
+    // Has BMS
     pHasBmsCharacteristic = pRemoteService->getCharacteristic(BLEUUID(BMSENABLED_CHARACTERISTIC_UUID));
     if (pHasBmsCharacteristic == nullptr) {
-      Serial.print("Failed to find HAS BATTERY characteristic");
+      Serial.print("Failed to find BMSENABLED characteristic");
       Serial.println();
     } else {
       if (pHasBmsCharacteristic->canNotify())
-        pHasBmsCharacteristic->registerForNotify(notifyCallbackCapability);
+        pHasBmsCharacteristic->registerForNotify(notifyCallbackBoolean);
+    }
 
+    // Has GPS
+    pHasGpsCharacteristic = pRemoteService->getCharacteristic(BLEUUID(GPSENABLED_CHARACTERISTIC_UUID));
+    if (pHasGpsCharacteristic == nullptr) {
+      Serial.print("Failed to find GPSENABLED characteristic");
+      Serial.println();
+    } else {
+      if (pHasGpsCharacteristic->canNotify())
+        pHasGpsCharacteristic->registerForNotify(notifyCallbackBoolean);
+    }
+
+    // Is GPS Locked
+    pIsGpsLockedCharacteristic = pRemoteService->getCharacteristic(BLEUUID(GPSLOCKED_CHARACTERISTIC_UUID));
+    if (pIsGpsLockedCharacteristic == nullptr) {
+      Serial.print("Failed to find GPSLOCKED characteristic");
+      Serial.println();
+    } else {
+      if (pIsGpsLockedCharacteristic->canNotify())
+        pIsGpsLockedCharacteristic->registerForNotify(notifyCallbackBoolean);
     }
   }
+
+
+
+
+
 
   // IMU - ACC
   pRemoteService = pClient->getService(BLEUUID(WRFCOM_IMU_SERVICE_UUID));
@@ -480,32 +694,28 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 void TrBLE::begin() {
   BLEDevice::init("");
   BLEDevice::setMTU(517);
+#if _DEBUG_
   Serial.println("setup() complete");
-} // End of setup.
+#endif
+}
 
 void lookForDevice() {
   static unsigned long last_scan = 0;
   unsigned long now = millis();
 
   if (last_scan > 0 && (now - last_scan) < 10000) {
-    //    static unsigned long last_out = 0;
-    //    unsigned long now = millis();
-    //    if (now - last_out >= 500) {
-    //      Serial.println("BLE::lookForDevice(): too soon");
-    //      last_out = now;
-    //    }
+    // Too soon since last scan
     return;
   }
   resetValues();
-
   IND.setScanning();
-  // Retrieve a Scanner and set the callback we want to use to be informed when we
-  // have detected a new device.  Specify that we want active scanning and start the
-  // scan to run for 5 seconds.
+
   static BLEScan* pBLEScan = nullptr;
 
   if (!pBLEScan) {
-    Serial.println("BLE::lookForDevice(): Configuring scanner");
+#if _DEBUG_
+    Serial.println("BLE::lookForDevice(): Configuring new scanner");
+#endif
     pBLEScan = BLEDevice::getScan();
     pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
     pBLEScan->setInterval(1349);
@@ -513,13 +723,16 @@ void lookForDevice() {
     pBLEScan->setActiveScan(true);
     pBLEScan->start(5, false);
   } else {
-    Serial.println("BLE::lookForDevice(): restarting scan scan");
-    BLEDevice::getScan()->start(5, false);  // this is just example to start scan after disconnect, most likely there is better way to do it in arduino
+#if _DEBUG_
+    Serial.println("BLE::lookForDevice(): restarting scanner");
+#endif
+    BLEDevice::getScan()->start(5, false);
 
   }
   last_scan = now;
-  //  doScan = false;
+#if _DEBUG_
   Serial.println("BLE::lookForDevice(): scan complete");
+#endif
 }
 
 // This is the Arduino main loop function.

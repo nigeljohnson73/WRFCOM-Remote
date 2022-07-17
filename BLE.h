@@ -17,6 +17,9 @@ class TrBLE {
     bool isConnected();
 
     // Core - WRFCOM_CORE_SERVICE_UUID
+    String getName() {
+      return _DEVICE_NAME_;
+    }
     double getBattery(); // Percentage // BATTERY_CHARACTERISTIC_UUID
     String getWifiMode();              // WIFI_CHARACTERISTIC_UUID
     String getIpAddress();             // IPADDR_CHARACTERISTIC_UUID
@@ -24,7 +27,7 @@ class TrBLE {
     void setArmed(bool tf);
     bool isLogging();                  // LOGGING_CHARACTERISTIC_UUID
     void setLogging(bool tf);
-    
+
 
     // Capability - WRFCOM_CAPABILITY_SERVICE_UUID
     bool hasBms();      // BMSENABLED_CHARACTERISTIC_UUID

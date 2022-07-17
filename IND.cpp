@@ -28,11 +28,13 @@
 
 #define STICK_BLE_PIN uint8_t(0)
 #define STICK_GPS_PIN uint8_t(1)
+#define STICK_ARM_PIN uint8_t(2)
+#define STICK_LOG_PIN uint8_t(3)
 #define STICK_BMS_PIN uint8_t(9)
 #define STICK_RBMS_PIN uint8_t(8)
 
 uint8_t c_red[] = {0xff, 0x00, 0x00};
-uint8_t c_amber[] = {0xff, 0x66, 0x00};
+uint8_t c_amber[] = {0xff, 0x33, 0x00};
 uint8_t c_green[] = {0x00, 0xff, 0x00};
 uint8_t c_blue[] = {0x00, 0x00, 0xff};
 uint8_t c_purple[] = {0xff, 0x00, 0x99};
@@ -84,6 +86,7 @@ void TrIND::setScanning() {
     }
     delay(LED_DELAY);
   }
+  LCD.setScanning();
 }
 
 void TrIND::loop() {
@@ -140,6 +143,25 @@ void TrIND::loop() {
         LEDStick.setLEDBrightness(STICK_GPS_PIN, 0);
         delay(LED_DELAY);
       }
+
+      LEDStick.setLEDBrightness(STICK_ARM_PIN, _stick_brightness);
+      if (BLE.isArmed()) {
+        LEDStick.setLEDColor(STICK_ARM_PIN, c_green[0], c_green[1], c_green[2]);
+        delay(LED_DELAY);
+      } else {
+        LEDStick.setLEDColor(STICK_ARM_PIN, c_amber[0], c_amber[1], c_amber[2]);
+        delay(LED_DELAY);
+      }
+
+      LEDStick.setLEDBrightness(STICK_LOG_PIN, _stick_brightness);
+      if (BLE.isLogging()) {
+        LEDStick.setLEDColor(STICK_LOG_PIN, c_green[0], c_green[1], c_green[2]);
+        delay(LED_DELAY);
+      } else {
+        LEDStick.setLEDColor(STICK_LOG_PIN, c_amber[0], c_amber[1], c_amber[2]);
+        delay(LED_DELAY);
+      }
+
 
 
 
