@@ -20,9 +20,9 @@ static BLERemoteCharacteristic* pWifiModeCharacteristic;
 static BLERemoteCharacteristic* pArmCharacteristic;
 static BLERemoteCharacteristic* pLogCharacteristic;
 double val_battery = 0;
-String val_ip_address = "999.999.999.999";
-String val_wifi_mode = "XX";
-bool val_arm = true;
+String val_ip_address = "";//"999.999.999.999";
+String val_wifi_mode = "";//"XX";
+bool val_arm = false;
 bool val_log = false;
 
 // Capability
@@ -68,8 +68,8 @@ double val_mag_y = 0;
 double val_mag_z = 0;
 
 void resetValues() {
-  val_ip_address = "999.999.999.999";
-  val_wifi_mode = "XX";
+  val_ip_address = "";//"999.999.999.999";
+  val_wifi_mode = "";//"XX";
   val_arm = false;
   val_log = false;
 
