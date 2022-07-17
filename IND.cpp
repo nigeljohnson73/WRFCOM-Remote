@@ -23,7 +23,7 @@
 #endif // ESP32
 
 #define NEO_BRIGHTNESS 10
-#define LED_DELAY 10
+#define LED_DELAY 1
 
 
 #define STICK_BLE_PIN uint8_t(0)
@@ -93,6 +93,48 @@ void TrIND::loop() {
   if (!isEnabled()) {
     return;
   }
+
+  // First!! handle LED blipping
+  unsigned long bnow = millis();
+  if ((bnow - _sequence_started) < _sequence_duration) {
+    // So we are in a sequence
+    if (_n_blips > 0) {
+      // we should be blipping
+//        ///////////////////////////////
+//        static unsigned long olast;
+//        unsigned long onow = millis();
+//        if ((onow - olast) >= 500) {
+//          olast = onow;
+//          Serial.print("_n_blips: ");
+//          Serial.print(_n_blips);
+//          Serial.print(", bnow - bstarted: ");
+//          Serial.print(bnow - _blip_started);
+//          Serial.print(", _blip: ");
+//          Serial.print(_blip);
+//          Serial.println();
+//        }
+//        ///////////////////////////////
+      if ((bnow - _blip_started) <= _blip_on_duration) {
+        // In the honemoon period, light 'er up
+        _blip = true;
+      } else {
+        // regardless of whether we should preparing another pone or just in the off period, still lights out
+        _blip = false;
+        if ((bnow - _blip_started) > (_blip_on_duration + _blip_off_duration)) {
+          // we are past when the blip should finish, lets do another one... if needed
+          if (_n_blips > 0) {
+            _n_blips -= 1;
+            _blip_started = bnow;
+          }
+        }
+      }
+    }
+  } else {
+    // Always blip so we can see we are alive!!!
+    blink(2);
+    _sequence_started = bnow;
+  }
+  digitalWrite(LED_PIN, _blip ? HIGH : LOW);
 
   // BLE connection
   if (BLE.isConnected()) {
@@ -191,15 +233,6 @@ void TrIND::loop() {
     LEDStick.setLEDBrightness(STICK_BMS_PIN, _stick_brightness);
     delay(LED_DELAY);
     double pcnt = BMS.getCapacityPercent();
-    static unsigned long last_out = 0;
-    unsigned long now = millis();
-    if ((now - last_out) >= 1000) {
-      Serial.print("Battery: ");
-      Serial.print(pcnt);
-      Serial.print("%");
-      Serial.println();
-      last_out = now;
-    }
     if (pcnt <= 10) {
       LEDStick.setLEDColor(STICK_BMS_PIN, c_red[0], c_red[1], c_red[2]);
       delay(LED_DELAY);
@@ -214,33 +247,4 @@ void TrIND::loop() {
     LEDStick.setLEDBrightness(STICK_BMS_PIN, 0);
     delay(LED_DELAY);
   }
-
-  // handle LED blipping
-  unsigned long now = millis();
-  if ((now - _sequence_started) < _sequence_duration) {
-    // So we are in a sequence
-    if (_n_blips > 0) {
-      // we should be blipping
-      if ((now - _blip_started) <= _blip_on_duration) {
-        // In the honemoon period, light 'er up
-        _blip = true;
-      } else {
-        // regardless of whether we should preparing another pone or just in the off period, still lights out
-        _blip = false;
-        if ((now - _blip_started) > (_blip_on_duration + _blip_off_duration)) {
-          // we are past when the blip should finish, lets do another one... if needed
-          if (_n_blips > 0) {
-            _n_blips -= 1;
-            _blip_started = now;
-          }
-        }
-      }
-    }
-  } else   if (!BLE.isConnected()) {
-    blink(2);
-    _sequence_started = now;
-  } else {
-    _sequence_started = now;
-  }
-  digitalWrite(LED_PIN, _blip ? HIGH : LOW);
 }
