@@ -82,6 +82,31 @@ void TrLCD::loop() {
     return;
   }
 
+  display.clearDisplay();
+  display.setCursor(0, 0);
+
+  // Draw the header (indicator and percentage, plus page number...)
+  static unsigned long last_indicat_time = 0;
+  static const unsigned long indicat_update = 125;
+  unsigned long inow = millis();
+  static char indicat[] = "|/-\\";
+  static int last_indicat = -1;
+  if ((inow - last_indicat_time) >= indicat_update) {
+    last_indicat_time = inow;
+    last_indicat += 1;
+    if (last_indicat == strlen(indicat)) {
+      last_indicat = 0;
+    }
+  }
+  display.print(indicat[last_indicat]);
+  display.print("                ");
+  int pcnt = round(BMS.getCapacityPercent());
+  if (pcnt < 100) display.print(" ");
+  if (pcnt < 10) display.print(" ");
+  display.print(pcnt);
+  display.print("%");
+  display.println();
+
   if (!BLE.isConnected()) {
     setScanning();
     return;
@@ -89,15 +114,6 @@ void TrLCD::loop() {
     _buttons_enabled = true;
 
     if (_current_page == 0) {
-      display.clearDisplay();
-      display.setCursor(0, 0);
-      display.print(" WRFCOM Remote (");
-      int pcnt = round(BMS.getCapacityPercent());
-      if (pcnt < 100) display.print(" ");
-      if (pcnt < 10) display.print(" ");
-      display.print(pcnt);
-      display.print("%)");
-      display.println();
       display.println();
       //    display.println(" Connected to WRFCOM");
       display.print("Name: ");
@@ -124,8 +140,7 @@ void TrLCD::loop() {
       display.print(BLE.isLogging() ? "LOGGING" : "-IDLE-");
       display.println();
     } else     if (_current_page == 1) {
-      display.clearDisplay();
-      display.setCursor(0, 0);
+      display.println();
       display.println("PAGE 2 - coming soon");
 
     } else {
