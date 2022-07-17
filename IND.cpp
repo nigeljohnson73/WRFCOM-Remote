@@ -23,7 +23,7 @@
 #endif // ESP32
 
 #define NEO_BRIGHTNESS 10
-#define LED_DELAY 1
+#define LED_DELAY 15
 
 
 #define STICK_BLE_PIN uint8_t(0)
@@ -100,20 +100,20 @@ void TrIND::loop() {
     // So we are in a sequence
     if (_n_blips > 0) {
       // we should be blipping
-//        ///////////////////////////////
-//        static unsigned long olast;
-//        unsigned long onow = millis();
-//        if ((onow - olast) >= 500) {
-//          olast = onow;
-//          Serial.print("_n_blips: ");
-//          Serial.print(_n_blips);
-//          Serial.print(", bnow - bstarted: ");
-//          Serial.print(bnow - _blip_started);
-//          Serial.print(", _blip: ");
-//          Serial.print(_blip);
-//          Serial.println();
-//        }
-//        ///////////////////////////////
+      //        ///////////////////////////////
+      //        static unsigned long olast;
+      //        unsigned long onow = millis();
+      //        if ((onow - olast) >= 500) {
+      //          olast = onow;
+      //          Serial.print("_n_blips: ");
+      //          Serial.print(_n_blips);
+      //          Serial.print(", bnow - bstarted: ");
+      //          Serial.print(bnow - _blip_started);
+      //          Serial.print(", _blip: ");
+      //          Serial.print(_blip);
+      //          Serial.println();
+      //        }
+      //        ///////////////////////////////
       if ((bnow - _blip_started) <= _blip_on_duration) {
         // In the honemoon period, light 'er up
         _blip = true;
@@ -138,72 +138,71 @@ void TrIND::loop() {
 
   // BLE connection
   if (BLE.isConnected()) {
-    _blip = false;
     if (_has_stick) {
       LEDStick.setLEDBrightness(STICK_BLE_PIN, _stick_brightness);
-      delay(LED_DELAY);
+      yield();
       LEDStick.setLEDColor(STICK_BLE_PIN, c_blue[0], c_blue[1], c_blue[2]);
-      delay(LED_DELAY);
+      yield();
 
       // HERE: This is where we probe all the details and show the lights
       if (BLE.hasBms()) {
         LEDStick.setLEDBrightness(STICK_RBMS_PIN, _stick_brightness);
-        delay(LED_DELAY);
+        yield();
         double pcnt = BLE.getBattery();
         if (pcnt <= 10) {
           LEDStick.setLEDColor(STICK_RBMS_PIN, c_red[0], c_red[1], c_red[2]);
-          delay(LED_DELAY);
+          yield();
         } else if (pcnt <= 30) {
           LEDStick.setLEDColor(STICK_RBMS_PIN, c_amber[0], c_amber[1], c_amber[2]);
-          delay(LED_DELAY);
+          yield();
         } else { // pcnt > 30
           LEDStick.setLEDColor(STICK_RBMS_PIN, c_green[0], c_green[1], c_green[2]);
-          delay(LED_DELAY);
+          yield();
         }
       } else { // !BLE.hasBattery()
         LEDStick.setLEDBrightness(STICK_RBMS_PIN, 0);
-        delay(LED_DELAY);
+        yield();
       }
 
       if (BLE.hasGps()) {
         LEDStick.setLEDBrightness(STICK_GPS_PIN, _stick_brightness);
-        delay(LED_DELAY);
+        yield();
         if (BLE.isGpsLocked()) {
           LEDStick.setLEDColor(STICK_GPS_PIN, c_green[0], c_green[1], c_green[2]);
-          delay(LED_DELAY);
+          yield();
         } else {
           int siv = BLE.getSiv();
           if (siv == 0) {
             LEDStick.setLEDColor(STICK_GPS_PIN, c_red[0], c_red[1], c_red[2]);
-            delay(LED_DELAY);
+            yield();
           } else { // >=1 but < locked
             LEDStick.setLEDColor(STICK_GPS_PIN, c_amber[0], c_amber[1], c_amber[2]);
-            delay(LED_DELAY);
+            yield();
           }
         }
       } else { // !BLE.hasGps()
         LEDStick.setLEDBrightness(STICK_GPS_PIN, 0);
-        delay(LED_DELAY);
+        yield();
       }
 
       LEDStick.setLEDBrightness(STICK_ARM_PIN, _stick_brightness);
       if (BLE.isArmed()) {
         LEDStick.setLEDColor(STICK_ARM_PIN, c_green[0], c_green[1], c_green[2]);
-        delay(LED_DELAY);
+        yield();
       } else {
         LEDStick.setLEDColor(STICK_ARM_PIN, c_amber[0], c_amber[1], c_amber[2]);
-        delay(LED_DELAY);
+        yield();
       }
 
       LEDStick.setLEDBrightness(STICK_LOG_PIN, _stick_brightness);
+      yield();
       if (BLE.isLogging()) {
         LEDStick.setLEDColor(STICK_LOG_PIN, c_green[0], c_green[1], c_green[2]);
-        delay(LED_DELAY);
+        yield();
       } else {
         LEDStick.setLEDColor(STICK_LOG_PIN, c_amber[0], c_amber[1], c_amber[2]);
-        delay(LED_DELAY);
+        yield();
       }
-
 
 
 
@@ -220,8 +219,9 @@ void TrIND::loop() {
   } else { // !BLE.connected()
     if (_has_stick) {
       LEDStick.setLEDBrightness(STICK_BLE_PIN, _stick_brightness);
+      yield();
       LEDStick.setLEDColor(STICK_BLE_PIN, c_red[0], c_red[1], c_red[2]);
-      delay(LED_DELAY);
+      yield();
     } else { // !_has_stick
       NEO.setPixelColor(0, NEO.Color(c_red[0] / NEO_BRIGHTNESS, c_red[1] / NEO_BRIGHTNESS, c_red[2] / NEO_BRIGHTNESS));
       NEO.show();
@@ -231,20 +231,20 @@ void TrIND::loop() {
   // Battery this side
   if (BMS.isEnabled()) {
     LEDStick.setLEDBrightness(STICK_BMS_PIN, _stick_brightness);
-    delay(LED_DELAY);
+    yield();
     double pcnt = BMS.getCapacityPercent();
     if (pcnt <= 10) {
       LEDStick.setLEDColor(STICK_BMS_PIN, c_red[0], c_red[1], c_red[2]);
-      delay(LED_DELAY);
+      yield();
     } else if (pcnt <= 30) {
       LEDStick.setLEDColor(STICK_BMS_PIN, c_amber[0], c_amber[1], c_amber[2]);
-      delay(LED_DELAY);
+      yield();
     } else { // pcnt > 30
       LEDStick.setLEDColor(STICK_BMS_PIN, c_green[0], c_green[1], c_green[2]);
-      delay(LED_DELAY);
+      yield();
     }
   } else { // !BMS.isEnabled()
     LEDStick.setLEDBrightness(STICK_BMS_PIN, 0);
-    delay(LED_DELAY);
   }
+  delay(LED_DELAY);
 }
