@@ -118,12 +118,9 @@ void TrLCD::loop() {
         display.println();
       }
       display.println();
-      display.print("   ");
-      //    display.print(" Armed: ");
+      display.print("  ");
       display.print(BLE.isArmed() ? "-ARMED-" : "UNARMED");
-      //    display.println();
-      //    display.print(" Captr: ");
-      display.print("   ");
+      display.print("    ");
       display.print(BLE.isLogging() ? "LOGGING" : "-IDLE-");
       display.println();
     } else     if (_current_page == 1) {
