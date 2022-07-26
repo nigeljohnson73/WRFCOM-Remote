@@ -24,26 +24,49 @@ void TrLCD::setScanning() {
   delay(15);
 }
 
-void TrLCD::nextPage() { // Button C
+void TrLCD::buttonPressA() {
   if (!_buttons_enabled) return;
-  Serial.print("TrLCD::nextPage()");
+  Serial.print("TrLCD::buttonPressA()");
+  Serial.println();
+  if (_current_page == 0) {
+    BLE.setArmed(!BLE.isArmed());
+  }
+}
+
+void TrLCD::buttonPressB() {
+  if (!_buttons_enabled) return;
+  Serial.print("TrLCD::buttonPressB()");
+  Serial.println();
+  if (_current_page == 0) {
+    BLE.setLogging(!BLE.isLogging());
+  }
+}
+
+void TrLCD::buttonPressC() {
+  if (!_buttons_enabled) return;
+  Serial.print("TrLCD::buttonPressC()");
   Serial.println();
   _current_page += 1;
 }
 
-void TrLCD::toggleArm() { // Button A
+void TrLCD::buttonHoldA() {
   if (!_buttons_enabled) return;
-  Serial.print("TrLCD::toggleArm()");
+  Serial.print("TrLCD::buttonHoldA()");
   Serial.println();
-  BLE.setArmed(!BLE.isArmed());
 }
 
-void TrLCD::toggleLog() { // Button B
+void TrLCD::buttonHoldB() {
   if (!_buttons_enabled) return;
-  Serial.print("TrLCD::toggleLog()");
+  Serial.print("TrLCD::buttonHoldB()");
   Serial.println();
-  BLE.setLogging(!BLE.isLogging());
 }
+
+void TrLCD::buttonHoldC() {
+  if (!_buttons_enabled) return;
+  Serial.print("TrLCD::buttonHoldC()");
+  Serial.println();
+}
+
 
 
 
@@ -106,6 +129,7 @@ void TrLCD::loop() {
   display.print(pcnt);
   display.print("%");
   display.println();
+  yield();
 
   if (!BLE.isConnected()) {
     setScanning();
@@ -145,11 +169,10 @@ void TrLCD::loop() {
 
     } else {
       _current_page = 0;
-      Serial.print("PAGE TOO BIG - RESETTING");
-      Serial.println();
     }
 
   }
+  yield();
 
   // Set to true, so the first time through here will set them as false and any press triggers them
   static bool last_a_state = true;
@@ -176,21 +199,33 @@ void TrLCD::loop() {
   if (now - last_a_millis > debounce_delay) {
     last_a_state = !last_a_state;
     if (last_a_state) {
-      toggleArm();
+      if (now - last_a_millis >= _button_hold_millis) {
+        buttonHoldA();
+      } else {
+        buttonPressA();
+      }
     }
   }
 
   if (now - last_b_millis > debounce_delay) {
     last_b_state = !last_b_state;
     if (last_b_state) {
-      toggleLog();
+      if (now - last_b_millis >= _button_hold_millis) {
+        buttonHoldB();
+      } else {
+        buttonPressB();
+      }
     }
   }
 
   if (now - last_c_millis > debounce_delay) {
     last_c_state = !last_c_state;
     if (last_c_state) {
-      nextPage();
+      if (now - last_c_millis >= _button_hold_millis) {
+        buttonHoldC();
+      } else {
+        buttonPressC();
+      }
     }
   }
 
