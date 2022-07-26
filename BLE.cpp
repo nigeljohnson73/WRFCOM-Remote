@@ -113,7 +113,7 @@ TrBLE BLE;
 TrBLE::TrBLE() {};
 
 bool TrBLE::isConnected() {
-  return connected | doConnect;
+  return connected;
 };
 
 // Core
