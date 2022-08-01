@@ -10,13 +10,42 @@
 Adafruit_SH1107 display = Adafruit_SH1107(64, 128, &Wire);
 TrLCD LCD;
 
+void drawHeader() {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+
+  // Draw the header (indicator and percentage, plus page number...)
+  static unsigned long last_indicat_time = 0;
+  static const unsigned long indicat_update = 125;
+  unsigned long inow = millis();
+  static char indicat[] = "|/-\\";
+  static int last_indicat = -1;
+  if ((inow - last_indicat_time) >= indicat_update) {
+    last_indicat_time = inow;
+    last_indicat += 1;
+    if (last_indicat == strlen(indicat)) {
+      last_indicat = 0;
+    }
+  }
+  display.print(indicat[last_indicat]);
+  display.print("                ");
+  int pcnt = round(BMS.getCapacityPercent());
+  if (pcnt < 100) display.print(" ");
+  if (pcnt < 10) display.print(" ");
+  display.print(pcnt);
+  display.print("%");
+  display.println();
+  yield();
+}
+
 TrLCD::TrLCD() {}
 
 void TrLCD::setScanning() {
   _current_page = 0;
   _buttons_enabled = false;
-  display.clearDisplay();
+  //  display.clearDisplay();
   display.setCursor(0, 0);
+  display.println();
   display.println();
   display.println();
   display.println(" Looking for buddy...");
@@ -87,6 +116,7 @@ void TrLCD::begin() {
   //  display.setCursor(0, 0);
   //  display.println("Welcome");
   //  display.display();
+  drawHeader();
   setScanning();
 
   pinMode(BUTTON_A, INPUT_PULLUP);
@@ -105,32 +135,7 @@ void TrLCD::loop() {
     return;
   }
 
-  display.clearDisplay();
-  display.setCursor(0, 0);
-
-  // Draw the header (indicator and percentage, plus page number...)
-  static unsigned long last_indicat_time = 0;
-  static const unsigned long indicat_update = 125;
-  unsigned long inow = millis();
-  static char indicat[] = "|/-\\";
-  static int last_indicat = -1;
-  if ((inow - last_indicat_time) >= indicat_update) {
-    last_indicat_time = inow;
-    last_indicat += 1;
-    if (last_indicat == strlen(indicat)) {
-      last_indicat = 0;
-    }
-  }
-  display.print(indicat[last_indicat]);
-  display.print("                ");
-  int pcnt = round(BMS.getCapacityPercent());
-  if (pcnt < 100) display.print(" ");
-  if (pcnt < 10) display.print(" ");
-  display.print(pcnt);
-  display.print("%");
-  display.println();
-  yield();
-
+  drawHeader();
   if (!BLE.isConnected()) {
     setScanning();
     return;
