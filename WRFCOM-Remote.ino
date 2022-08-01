@@ -10,15 +10,17 @@ void setup() {
 
   Serial.println("setup(): BLE Client");
 
+  BMS.begin();
+  NOW.begin();
+  BLE.begin();
   IND.begin();
   LCD.begin();
-  BMS.begin();
-  BLE.begin();
 }
 
 void loop() {
+  NOW.loop();
+  BLE.loop();
   BMS.loop();
   IND.loop();
   LCD.loop();
-  BLE.loop();
 }
