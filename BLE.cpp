@@ -8,9 +8,9 @@ static BLEUUID serviceUUID("9ddf3d45-ea85-467a-9b23-34a9e4900400");
 // The characteristic of the remote service we are interested in.
 static BLEUUID    charUUID("9ddf3d45-ea85-467a-9b23-34a9e4900603");
 
-static bool doConnect = false;
-static bool connected = false;
-static bool doScan = true;
+static bool ble_doConnect = false;
+static bool ble_connected = false;
+static bool ble_doScan = true;
 static BLEAdvertisedDevice* myDevice;
 
 // Core
@@ -19,93 +19,93 @@ static BLERemoteCharacteristic* pIpAddressCharacteristic;
 static BLERemoteCharacteristic* pWifiModeCharacteristic;
 static BLERemoteCharacteristic* pArmCharacteristic;
 static BLERemoteCharacteristic* pLogCharacteristic;
-double val_battery = 0;
-String val_ip_address = "";//"999.999.999.999";
-String val_wifi_mode = "";//"XX";
-bool val_arm = false;
-bool val_log = false;
+double ble_val_battery = 0;
+String ble_val_ip_address = "";//"999.999.999.999";
+String ble_val_wifi_mode = "";//"XX";
+bool ble_val_arm = false;
+bool ble_val_log = false;
 
 // Capability
 static BLERemoteCharacteristic* pHasGpsCharacteristic;
 static BLERemoteCharacteristic* pIsGpsLockedCharacteristic;
 static BLERemoteCharacteristic* pHasBmsCharacteristic;
-bool val_has_bms = false;
-bool val_has_gps = false;
-bool val_is_gps_locked = false;
-bool val_has_rtc = false;
-bool val_has_emu = false;
-bool val_has_imu = false;
-bool val_has_srv = false;
-bool val_has_temp = false;
-bool val_has_pressure = false;
-bool val_has_acc = false;
-bool val_has_gyro = false;
-bool val_has_mag = false;
+bool ble_val_has_bms = false;
+bool ble_val_has_gps = false;
+bool ble_val_is_gps_locked = false;
+bool ble_val_has_rtc = false;
+bool ble_val_has_emu = false;
+bool ble_val_has_imu = false;
+bool ble_val_has_srv = false;
+bool ble_val_has_temp = false;
+bool ble_val_has_pressure = false;
+bool ble_val_has_acc = false;
+bool ble_val_has_gyro = false;
+bool ble_val_has_mag = false;
 
 // GPS
-int val_siv = 0;
-double val_latitude = 0;
-double val_longitude = 0;
-double val_altitude = 0;
+int ble_val_siv = 0;
+double ble_val_latitude = 0;
+double ble_val_longitude = 0;
+double ble_val_altitude = 0;
 
 
 // EMU
-double val_temp = 0;
-double val_pressure = 0;
+double ble_val_temp = 0;
+double ble_val_pressure = 0;
 
 // IMU - Acc
 static BLERemoteCharacteristic* pAccZCharacteristic;
-double val_acc_x = 0;
-double val_acc_y = 0;
-double val_acc_z = 0;
+double ble_val_acc_x = 0;
+double ble_val_acc_y = 0;
+double ble_val_acc_z = 0;
 
-double val_gyro_x = 0;
-double val_gyro_y = 0;
-double val_gyro_z = 0;
+double ble_val_gyro_x = 0;
+double ble_val_gyro_y = 0;
+double ble_val_gyro_z = 0;
 
-double val_mag_x = 0;
-double val_mag_y = 0;
-double val_mag_z = 0;
+double ble_val_mag_x = 0;
+double ble_val_mag_y = 0;
+double ble_val_mag_z = 0;
 
 void resetValues() {
-  val_ip_address = "";//"999.999.999.999";
-  val_wifi_mode = "";//"XX";
-  val_arm = false;
-  val_log = false;
+  ble_val_ip_address = "";//"999.999.999.999";
+  ble_val_wifi_mode = "";//"XX";
+  ble_val_arm = false;
+  ble_val_log = false;
 
-  val_has_bms = false;
-  val_has_gps = false;
-  val_is_gps_locked = false;
-  val_has_rtc = false;
-  val_has_imu = false;
-  val_has_emu = false;
-  val_has_srv = false;
+  ble_val_has_bms = false;
+  ble_val_has_gps = false;
+  ble_val_is_gps_locked = false;
+  ble_val_has_rtc = false;
+  ble_val_has_imu = false;
+  ble_val_has_emu = false;
+  ble_val_has_srv = false;
 
-  val_has_temp = false;
-  val_has_pressure = false;
-  val_has_acc = false;
-  val_has_gyro = false;
-  val_has_mag = false;
+  ble_val_has_temp = false;
+  ble_val_has_pressure = false;
+  ble_val_has_acc = false;
+  ble_val_has_gyro = false;
+  ble_val_has_mag = false;
 
-  val_siv = 0;
-  val_latitude = 0;
-  val_longitude = 0;
-  val_altitude = 0;
+  ble_val_siv = 0;
+  ble_val_latitude = 0;
+  ble_val_longitude = 0;
+  ble_val_altitude = 0;
 
-  val_pressure = 0;
-  val_temp = 0;
+  ble_val_pressure = 0;
+  ble_val_temp = 0;
 
-  val_acc_x = 0;
-  val_acc_y = 0;
-  val_acc_z = 0;
+  ble_val_acc_x = 0;
+  ble_val_acc_y = 0;
+  ble_val_acc_z = 0;
 
-  val_gyro_x = 0;
-  val_gyro_y = 0;
-  val_gyro_z = 0;
+  ble_val_gyro_x = 0;
+  ble_val_gyro_y = 0;
+  ble_val_gyro_z = 0;
 
-  val_mag_x = 0;
-  val_mag_y = 0;
-  val_mag_z = 0;
+  ble_val_mag_x = 0;
+  ble_val_mag_y = 0;
+  ble_val_mag_z = 0;
 
 }
 
@@ -113,24 +113,24 @@ TrBLE BLE;
 TrBLE::TrBLE() {};
 
 bool TrBLE::isConnected() {
-  return connected;
+  return ble_connected;
 };
 
 // Core
 double TrBLE::getBattery() {
-  return val_battery;
+  return ble_val_battery;
 }
 String TrBLE::getIpAddress() {
-  return val_ip_address;
+  return ble_val_ip_address;
 }
 String TrBLE::getWifiMode() {
-  return val_wifi_mode;
+  return ble_val_wifi_mode;
 }
 bool TrBLE::isArmed() {
-  return val_arm;
+  return ble_val_arm;
 }
 bool TrBLE::isLogging() {
-  return val_log;
+  return ble_val_log;
 }
 void TrBLE::setArmed(bool tf) {
   // TBD
@@ -159,40 +159,40 @@ void TrBLE::setLogging(bool tf) {
 
 // Capability
 bool TrBLE::hasBms() {
-  return val_has_bms;
+  return ble_val_has_bms;
 }
 bool TrBLE::hasGps() {
-  return val_has_gps;
+  return ble_val_has_gps;
 }
 bool TrBLE::isGpsLocked() {
-  return hasGps() && val_is_gps_locked;
+  return hasGps() && ble_val_is_gps_locked;
 }
 bool TrBLE::hasEmu() {
-  return val_has_emu;
+  return ble_val_has_emu;
 }
 bool TrBLE::hasImu() {
-  return val_has_imu;
+  return ble_val_has_imu;
 }
 bool TrBLE::hasRtc() {
-  return val_has_rtc;
+  return ble_val_has_rtc;
 }
 bool TrBLE::hasSrv() {
-  return val_has_srv;
+  return ble_val_has_srv;
 }
 bool TrBLE::hasTemp() {
-  return hasEmu() && val_has_temp;
+  return hasEmu() && ble_val_has_temp;
 }
 bool TrBLE::hasPressure() {
-  return hasEmu() && val_has_pressure;
+  return hasEmu() && ble_val_has_pressure;
 }
 bool TrBLE::hasAcc() {
-  return hasImu() && val_has_acc;
+  return hasImu() && ble_val_has_acc;
 }
 bool TrBLE::hasGyro() {
-  return hasImu() && val_has_gyro;
+  return hasImu() && ble_val_has_gyro;
 }
 bool TrBLE::hasMag() {
-  return hasImu() && val_has_mag;
+  return hasImu() && ble_val_has_mag;
 }
 
 
@@ -200,16 +200,16 @@ bool TrBLE::hasMag() {
 
 // GPS
 int TrBLE::getSiv() {
-  return val_siv;
+  return ble_val_siv;
 }
 double TrBLE::getLatitude() {
-  return val_latitude;
+  return ble_val_latitude;
 }
 double TrBLE::getLongitude() {
-  return val_longitude;
+  return ble_val_longitude;
 }
 double TrBLE::getAltitude() {
-  return val_altitude;
+  return ble_val_altitude;
 }
 
 
@@ -218,21 +218,21 @@ double TrBLE::getAltitude() {
 
 // EMU
 double TrBLE::getTemp() {
-  return val_temp;
+  return ble_val_temp;
 }
 double TrBLE::getPressure() {
-  return val_pressure;
+  return ble_val_pressure;
 }
 
 // IMU - ACC
 double TrBLE::getAccX() {
-  return val_acc_x;
+  return ble_val_acc_x;
 }
 double TrBLE::getAccY() {
-  return val_acc_y;
+  return ble_val_acc_y;
 }
 double TrBLE::getAccZ() {
-  return val_acc_z;
+  return ble_val_acc_z;
 }
 
 
@@ -241,13 +241,13 @@ double TrBLE::getAccZ() {
 
 // IMU - GYRO
 double TrBLE::getGyroX() {
-  return val_gyro_x;
+  return ble_val_gyro_x;
 }
 double TrBLE::getGyroY() {
-  return val_gyro_y;
+  return ble_val_gyro_y;
 }
 double TrBLE::getGyroZ() {
-  return val_gyro_z;
+  return ble_val_gyro_z;
 }
 
 
@@ -256,13 +256,13 @@ double TrBLE::getGyroZ() {
 
 // IMU - MAG
 double TrBLE::getMagX() {
-  return val_mag_x;
+  return ble_val_mag_x;
 }
 double TrBLE::getMagY() {
-  return val_mag_y;
+  return ble_val_mag_y;
 }
 double TrBLE::getMagZ() {
-  return val_mag_z;
+  return ble_val_mag_z;
 }
 
 // Boolean
@@ -276,85 +276,85 @@ static void notifyCallbackBoolean(BLERemoteCharacteristic* pBLERemoteCharacteris
   if (false) {
 
   } else if (in == String(ARMED_CHARACTERISTIC_UUID)) {
-    val_arm = val;
+    ble_val_arm = val;
 #if _DEBUG_
     out = "       Armed: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else  if (in == String(LOGGING_CHARACTERISTIC_UUID)) {
-    val_log = val;
+    ble_val_log = val;
 #if _DEBUG_
     out = "     Logging: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(RTCENABLED_CHARACTERISTIC_UUID)) {
-    val_has_rtc = val;
+    ble_val_has_rtc = val;
 #if _DEBUG_
     out = " RTC Enabled: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(BMSENABLED_CHARACTERISTIC_UUID)) {
-    val_has_bms = val;
+    ble_val_has_bms = val;
 #if _DEBUG_
     out = " BMS Enabled: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(GPSENABLED_CHARACTERISTIC_UUID)) {
-    val_has_gps = val;
+    ble_val_has_gps = val;
 #if _DEBUG_
     out = " GPS Enabled: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(GPSLOCKED_CHARACTERISTIC_UUID)) {
-    val_is_gps_locked = val;
+    ble_val_is_gps_locked = val;
 #if _DEBUG_
     out = "  GPS Locked: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(EMUENABLED_CHARACTERISTIC_UUID)) {
-    val_has_emu = val;
+    ble_val_has_emu = val;
 #if _DEBUG_
     out = " EMU Enabled: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(IMUENABLED_CHARACTERISTIC_UUID)) {
-    val_has_imu = val;
+    ble_val_has_imu = val;
 #if _DEBUG_
     out = " IMU Enabled: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(SRVENABLED_CHARACTERISTIC_UUID)) {
-    val_has_srv = val;
+    ble_val_has_srv = val;
 #if _DEBUG_
     out = " SRV Enabled: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(CTEMPERATURE_CHARACTERISTIC_UUID)) {
-    val_has_temp = val;
+    ble_val_has_temp = val;
 #if _DEBUG_
     out = "    Has Temp: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(CPRESSURE_CHARACTERISTIC_UUID)) {
-    val_has_pressure = val;
+    ble_val_has_pressure = val;
 #if _DEBUG_
     out = "Has Pressure: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(CACC_CHARACTERISTIC_UUID)) {
-    val_has_acc = val;
+    ble_val_has_acc = val;
 #if _DEBUG_
     out = "     Has ACC: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(CGYRO_CHARACTERISTIC_UUID)) {
-    val_has_gyro = val;
+    ble_val_has_gyro = val;
 #if _DEBUG_
     out = "    Has GYRO: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
 
   } else if (in == String(CMAG_CHARACTERISTIC_UUID)) {
-    val_has_mag = val;
+    ble_val_has_mag = val;
 #if _DEBUG_
     out = "     Has MAG: "; out += (val ? "TRUE" : "FALSE");
 #endif // _DEBUG_
@@ -399,15 +399,15 @@ static void notifyCallbackValue(BLERemoteCharacteristic* pBLERemoteCharacteristi
   String in = String(pBLERemoteCharacteristic->getUUID().toString().c_str());
   if (false) {
   } else if (in == String(BATTERY_CHARACTERISTIC_UUID.toString().c_str())) {
-    val_battery = float(val);
+    ble_val_battery = float(val);
 #if _DEBUG_
-    out = "     Battery: "; out += val_battery; out += "%";
+    out = "     Battery: "; out += ble_val_battery; out += "%";
 #endif // _DEBUG_
 
   } else if (in == String(ACCZ_CHARACTERISTIC_UUID)) {
-    val_acc_z = float(val) / 1000.0;
+    ble_val_acc_z = float(val) / 1000.0;
 #if _DEBUG_
-    out = "       Acc-Z: "; out += val_acc_z; out += " m/s2";
+    out = "       Acc-Z: "; out += ble_val_acc_z; out += " m/s2";
 #endif // _DEBUG_
 
   } else {
@@ -443,12 +443,12 @@ static void notifyCallbackString(BLERemoteCharacteristic* pBLERemoteCharacterist
   String in = pBLERemoteCharacteristic->getUUID().toString().c_str();
   if (false) {
   } else if (in == String(IPADDR_CHARACTERISTIC_UUID)) {
-    val_ip_address = rval;
+    ble_val_ip_address = rval;
 #if _DEBUG_
     out = "  IP Address: "; out += rval;
 #endif // _DEBUG_
   } else if (in == String(WIFI_CHARACTERISTIC_UUID)) {
-    val_wifi_mode = rval;
+    ble_val_wifi_mode = rval;
 #if _DEBUG_
     out = "   WiFi mode: "; out += rval;
 #endif // _DEBUG_
@@ -480,7 +480,7 @@ class MyClientCallback : public BLEClientCallbacks {
     }
 
     void onDisconnect(BLEClient* pclient) {
-      connected = false;
+      ble_connected = false;
       resetValues();
 #if _DEBUG_ && _XDEBUG_
       Serial.println("BLEClient::onDisconnect()");
@@ -631,7 +631,7 @@ bool connectToServer() {
     }
   }
 
-  connected = true;
+  ble_connected = true;
   return true;
 }
 
@@ -643,8 +643,8 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
       // We have found a device, let us now see if it contains the service we are looking for.
 
       if (advertisedDevice.haveName() && String(advertisedDevice.getName().c_str()) == String(_DEVICE_NAME_)) {
-        doConnect = true;
-        doScan = true;
+        ble_doConnect = true;
+        ble_doScan = true;
 
         BLEDevice::getScan()->stop();
         if (myDevice) {
@@ -695,7 +695,8 @@ void TrBLE::begin() {
   BLEDevice::init("");
   BLEDevice::setMTU(517);
 #if _DEBUG_
-  Serial.println("setup() complete");
+  Serial.print("BLE initialised: OK");
+  Serial.println();
 #endif
 }
 
@@ -744,27 +745,27 @@ void TrBLE::loop() {
   //    last_out = now;
   //  }
 
-  // If the flag "doConnect" is true then we have scanned for and found the desired
+  // If the flag "ble_doConnect" is true then we have scanned for and found the desired
   // BLE Server with which we wish to connect.  Now we connect to it.  Once we are
   // connected we set the connected flag to be true.
-  if (doConnect == true) {
+  if (ble_doConnect == true) {
     if (connectToServer()) {
       Serial.println("We are now connected to the BLE Server.");
     } else {
       Serial.println("We have failed to connect to the server; there is nothin more we will do.");
     }
-    doConnect = false;
+    ble_doConnect = false;
   }
 
   // If we are connected to a peer BLE Server, update the characteristic each time we are reached
   // with the current time since boot.
-  if (connected) {
+  if (ble_connected) {
     //    String newValue = "Time since boot: " + String(millis() / 1000);
     //    Serial.println("Setting new characteristic value to \"" + newValue + "\"");
 
     // Set the characteristic's value to be the array of bytes that is actually a string.
     //    pRemoteCharacteristic->writeValue(newValue.c_str(), newValue.length());
-  } else if (doScan) {
+  } else if (ble_doScan) {
     lookForDevice();
   }
 
